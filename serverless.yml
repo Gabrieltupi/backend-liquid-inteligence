@@ -6,7 +6,7 @@ provider:
   region: us-east-1
   stage: ${opt:stage, 'dev'}
   environment:
-    JWT_SECRET: ${env:JWT_SECRET}
+    JWT_SECRET: ${env:JWT_SECRET, 'default-jwt-secret'}
     JWT_EXPIRY: ${env:JWT_EXPIRY, '7200'}
     USE_DYNAMODB: 'true'
     WEATHER_API_KEY: ${env:WEATHER_API_KEY, 'demo-key'}
