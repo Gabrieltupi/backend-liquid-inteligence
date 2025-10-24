@@ -95,35 +95,27 @@ class AuthService:
     def validate_token(self, token: str) -> Dict[str, Any]:
         
         try:
-            print(f"[AUTH_SERVICE] Validando token: {token[:20]}...")
             
             payload = jwt.decode(token, self.secret_key, algorithms=['HS256'])
-            print(f"[AUTH_SERVICE] Payload decodificado: {payload}")
             
             exp = payload.get('exp')
             current_time = datetime.utcnow().timestamp()
-            print(f"[AUTH_SERVICE] Exp: {exp}, Current: {current_time}, Expired: {current_time > exp if exp else 'N/A'}")
             
             if exp and current_time > exp:
-                print("[AUTH_SERVICE] Token expirado!")
                 return {
                     'valid': False,
                     'error': 'Token expired'
                 }
             
             user_id = payload.get('user_id')
-            print(f"[AUTH_SERVICE] Buscando usuário por ID: {user_id}")
             user_data = self.user_repository.find_by_id(user_id)
-            print(f"[AUTH_SERVICE] Dados do usuário encontrados: {user_data}")
             
             if not user_data:
-                print("[AUTH_SERVICE] Usuário não encontrado!")
                 return {
                     'valid': False,
                     'error': 'User not found'
                 }
             
-            print("[AUTH_SERVICE] Usuário encontrado! Token válido")
             return {
                 'valid': True,
                 'user': {

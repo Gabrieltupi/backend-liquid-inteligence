@@ -1,83 +1,77 @@
 
 import uuid
-import json
-import os
+import boto3
 from typing import Dict, Any, Optional
 from app.repositories.base_repository import BaseRepository
+from botocore.exceptions import ClientError
 
 class UserRepository(BaseRepository):
     
     def __init__(self):
         super().__init__()
         self.table_name = "liquid-users"
-
-        self.storage_file = "/tmp/liquid_users.json"
-        self._users = self._load_users()
-    
-    def _load_users(self) -> Dict[str, Dict[str, Any]]:
-        
-        try:
-            if os.path.exists(self.storage_file):
-                with open(self.storage_file, 'r', encoding='utf-8') as f:
-                    return json.load(f)
-            return {}
-        except Exception as e:
-            print(f"Error loading users: {e}")
-            return {}
-    
-    def _save_users(self):
-        
-        try:
-            with open(self.storage_file, 'w', encoding='utf-8') as f:
-                json.dump(self._users, f, ensure_ascii=False, indent=2)
-        except Exception as e:
-            print(f"Error saving users: {e}")
+        self.table = self._get_table()
     
     def find_by_email(self, email: str) -> Optional[Dict[str, Any]]:
-        
+        """Busca usuário por email usando DynamoDB"""
         try:
-
-            print(f"Buscando usuário por email: {email}")
-            print(f"Usuários armazenados: {list(self._users.keys())}")
             
-            return self._users.get(email)
+            if not self.table:
+                return None
             
+            response = self.table.scan(
+                FilterExpression='email = :email',
+                ExpressionAttributeValues={':email': email}
+            )
+            
+            if response['Items']:
+                user = response['Items'][0]
+                return user
+            else:
+                return None
+                
+        except ClientError as e:
+            return None
         except Exception as e:
-            print(f"Error finding user by email: {e}")
             return None
     
     def find_by_id(self, user_id: str) -> Optional[Dict[str, Any]]:
-        
+        """Busca usuário por ID usando DynamoDB"""
         try:
-
-            print(f"Buscando usuário por ID: {user_id}")
-            print(f"Usuários armazenados: {list(self._users.keys())}")
             
-            for email, user_data in self._users.items():
-                if user_data.get('id') == user_id:
-                    return user_data
+            if not self.table:
+                return None
             
+            response = self.table.get_item(
+                Key={'id': user_id}
+            )
+            
+            if 'Item' in response:
+                user = response['Item']
+                return user
+            else:
+                return None
+                
+        except ClientError as e:
             return None
-            
         except Exception as e:
-            print(f"Error finding user by ID: {e}")
             return None
     
     def create(self, user_data: Dict[str, Any]) -> Dict[str, Any]:
-        
+        """Cria usuário no DynamoDB"""
         try:
-
             user_id = str(uuid.uuid4())
-            
             user_data['id'] = user_id
             
-            print(f"Criando usuário: {user_data['email']}")
-            self._users[user_data['email']] = user_data
-            self._save_users()
-            print(f"Usuário salvo. Total de usuários: {len(self._users)}")
-
+            
+            if not self.table:
+                raise Exception("DynamoDB table not available")
+            
+            self.table.put_item(Item=user_data)
+            
             return user_data
             
+        except ClientError as e:
+            raise
         except Exception as e:
-            print(f"Error creating user: {e}")
             raise

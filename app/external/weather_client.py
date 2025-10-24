@@ -11,7 +11,7 @@ class WeatherClient(BaseClient):
         super().__init__()
         self.base_url = "https://api.openweathermap.org/data/2.5"
 
-        self.api_key = "your_api_key_here"
+        self.api_key = "0cad1c087c0365c42d4c56361b4a44d5"
     
     def get_weather_data(self, coordinates: Dict[str, float]) -> Dict[str, Any]:
         

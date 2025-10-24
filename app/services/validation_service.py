@@ -19,11 +19,13 @@ class ValidationService:
         if not email or not password:
             raise ValidationError("Email and password are required")
         
+        email = email.strip().lower()
+        
         if not validate_email(email):
             raise ValidationError("Invalid email format")
         
         return {
-            'email': email.strip().lower(),
+            'email': email,
             'password': password
         }
     
@@ -41,6 +43,8 @@ class ValidationService:
         if not all([email, password, name]):
             raise ValidationError("Email, password and name are required")
         
+        email = email.strip().lower()
+        
         if not validate_email(email):
             raise ValidationError("Invalid email format")
         
@@ -48,16 +52,17 @@ class ValidationService:
             raise ValidationError("Password must be at least 8 characters")
         
         return {
-            'email': email.strip().lower(),
+            'email': email,
             'password': password,
             'name': name.strip()
         }
     
     def validate_location_request(self, body: str) -> Dict[str, Any]:
         
+        
         try:
             data = json.loads(body)
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
             raise ValidationError("Invalid JSON in request body")
         
         location = data.get('location')
@@ -68,9 +73,11 @@ class ValidationService:
         if not validate_location_input(location):
             raise ValidationError("Invalid location format")
         
-        return {
+        result = {
             'location': location.strip()
         }
+        
+        return result
     
     def validate_auth_header(self, headers: Dict[str, str]) -> str:
         

@@ -1,7 +1,9 @@
 
 import requests
+from datetime import datetime
 from typing import Dict, Any
 from app.external.base_client import BaseClient
+from app.utils.exceptions import ExternalServiceError
 
 class BancoCentralClient(BaseClient):
     
@@ -13,10 +15,10 @@ class BancoCentralClient(BaseClient):
         
         try:
 
-            selic_url = "https://api.bcb.gov.br/dados/serie/bcdata.sgs.11/dados/ultimos/1"
+            selic_url = "https://api.bcb.gov.br/dados/serie/bcdata.sgs.11/dados/ultimos/1?formato=json"
             selic_response = requests.get(selic_url, timeout=10)
             
-            ipca_url = "https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados/ultimos/1"
+            ipca_url = "https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados/ultimos/1?formato=json"
             ipca_response = requests.get(ipca_url, timeout=10)
             
             interest_rate = 8.5

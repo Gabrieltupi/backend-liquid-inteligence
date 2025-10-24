@@ -22,7 +22,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "serverless-offline": "^14.4.0",
-    "cross-env": "^7.0.3"
+    "serverless-python-requirements": "^6.1.2"
   }
 }

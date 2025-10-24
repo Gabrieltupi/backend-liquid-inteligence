@@ -34,30 +34,21 @@ class LiquidApp:
     
     def process_request(self, request_context: Dict[str, Any]) -> Dict[str, Any]:
         try:
-            print("[MAIN] Iniciando processamento da requisição")
-            print(f"[MAIN] Request context: {request_context}")
-            
-            print("[MAIN] Aplicando logging middleware")
             request_context = self.logging_middleware.process_request(request_context)
             
             method = request_context['method']
             path = request_context['path']
-            print(f"[MAIN] Método: {method}, Path: {path}")
             
             if path == '/health':
-                print("[MAIN] Roteando para health check")
                 return self.health_controller.health_check(request_context)
             
             elif path.startswith('/api/auth'):
-                print("[MAIN] Roteando para auth")
                 return self._route_auth(method, path, request_context)
             
             elif path.startswith('/api/location'):
-                print("[MAIN] Roteando para location")
                 return self._route_location(method, path, request_context)
             
             else:
-                print(f"[MAIN] Endpoint não encontrado: {path}")
                 return self.response_formatter.error_response(
                     error_code="NOT_FOUND",
                     message="Endpoint not found",
@@ -80,18 +71,12 @@ class LiquidApp:
             )
     
     def _route_location(self, method: str, path: str, request_context: Dict[str, Any]) -> Dict[str, Any]:
-        print(f"[MAIN] _route_location - Method: {method}, Path: {path}")
         
         if path == '/api/location/analyze' and method == 'POST':
-            print("[MAIN] Roteando para analyze_location com autenticação")
-            print("[MAIN] Aplicando auth middleware")
             auth_result = self.auth_middleware.validate_request(request_context)
-            print(f"[MAIN] Auth result: {auth_result}")
             request_context['user'] = auth_result['user']
-            print("[MAIN] Chamando location_controller.analyze_location")
             return self.location_controller.analyze_location(request_context)
         else:
-            print(f"[MAIN] Método não permitido: {method} para {path}")
             return self.response_formatter.error_response(
                 error_code="METHOD_NOT_ALLOWED",
                 message="Method not allowed for this endpoint",

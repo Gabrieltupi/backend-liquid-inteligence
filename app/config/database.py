@@ -22,7 +22,6 @@ class DatabaseConfig:
                     endpoint_url=self.settings.dynamodb_endpoint
                 )
         except Exception as e:
-            print(f"Error initializing DynamoDB: {e}")
             self.dynamodb = None
     
     def get_table(self, table_name: str):
@@ -33,5 +32,4 @@ class DatabaseConfig:
         try:
             return self.dynamodb.Table(table_name)
         except Exception as e:
-            print(f"Error getting table {table_name}: {e}")
             return None
