@@ -34,22 +34,22 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         
-           - name: Deploy to AWS
-             run: serverless deploy --verbose
-             env:
-               JWT_SECRET: ${{ secrets.JWT_SECRET }}
-               WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
-               USE_DYNAMODB: 'true'
-               NODE_ENV: 'production'
-               
-           - name: Get API URLs
-             run: |
-               echo "🚀 API URLs:"
-               serverless info --verbose
-               
-           - name: Notify deployment success
-             if: success()
-             run: echo "✅ Deploy realizado com sucesso!"
+    - name: Deploy to AWS
+      run: serverless deploy --verbose
+      env:
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
+        USE_DYNAMODB: 'true'
+        NODE_ENV: 'production'
+        
+    - name: Get API URLs
+      run: |
+        echo "🚀 API URLs:"
+        serverless info --verbose
+        
+    - name: Notify deployment success
+      if: success()
+      run: echo "✅ Deploy realizado com sucesso!"
       
     - name: Notify deployment failure
       if: failure()
