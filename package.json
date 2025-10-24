@@ -1,0 +1,28 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development serverless offline",
+    "prod": "cross-env NODE_ENV=production serverless deploy --stage prod",
+    "deploy:dev": "cross-env NODE_ENV=development serverless deploy --stage dev",
+    "deploy:prod": "cross-env NODE_ENV=production serverless deploy --stage prod",
+    "remove:dev": "serverless remove --stage dev",
+    "remove:prod": "serverless remove --stage prod",
+    "logs:dev": "serverless logs -f api --stage dev",
+    "logs:prod": "serverless logs -f api --stage prod",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "serverless-offline": "^14.4.0",
+    "cross-env": "^7.0.3"
+  }
+}

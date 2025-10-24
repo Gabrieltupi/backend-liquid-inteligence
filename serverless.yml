@@ -1,0 +1,116 @@
+service: liquid-location-intelligence
+
+provider:
+  name: aws
+  runtime: python3.9
+  region: us-east-1
+  stage: ${opt:stage, 'dev'}
+  environment:
+    AWS_REGION: ${opt:region, 'us-east-1'}
+    JWT_SECRET: ${env:JWT_SECRET}
+    JWT_EXPIRY: ${env:JWT_EXPIRY, '3600'}
+    USE_DYNAMODB: ${env:USE_DYNAMODB, 'true'}
+    WEATHER_API_KEY: ${env:WEATHER_API_KEY}
+    NODE_ENV: ${env:NODE_ENV, 'development'}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - "arn:aws:dynamodb:${opt:region, 'us-east-1'}:*:table/liquid-users"
+            - "arn:aws:dynamodb:${opt:region, 'us-east-1'}:*:table/liquid-cache"
+
+functions:
+  api:
+    handler: handler.handler
+    events:
+      - http:
+          path: /{proxy+}
+          method: ANY
+          cors: true
+      - http:
+          path: /
+          method: ANY
+          cors: true
+
+plugins:
+  - serverless-offline
+
+custom:
+  serverless-offline:
+    httpPort: 3000
+    host: 0.0.0.0
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: liquid-users
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: EmailIndex
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+
+    CacheTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: liquid-cache
+        AttributeDefinitions:
+          - AttributeName: key
+            AttributeType: S
+        KeySchema:
+          - AttributeName: key
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TimeToLiveSpecification:
+          AttributeName: ttl
+          Enabled: true
+
+  Outputs:
+    ApiGatewayRestApiId:
+      Value:
+        Ref: ApiGatewayRestApi
+      Export:
+        Name: ${self:service}-${self:provider.stage}-ApiGatewayRestApiId
+
+    ApiGatewayRestApiRootResourceId:
+      Value:
+        Fn::GetAtt:
+          - ApiGatewayRestApi
+          - RootResourceId
+      Export:
+        Name: ${self:service}-${self:provider.stage}-ApiGatewayRestApiRootResourceId
+
+    UsersTableName:
+      Value:
+        Ref: UsersTable
+      Export:
+        Name: ${self:service}-${self:provider.stage}-UsersTableName
+
+    CacheTableName:
+      Value:
+        Ref: CacheTable
+      Export:
+        Name: ${self:service}-${self:provider.stage}-CacheTableName
